@@ -10,13 +10,11 @@ class User(BaseModel):
 
 @app.post("/users")
 def create_user(usuario: User):
-    if not email_validator(usuario):
-        return {'error': 'E-mail invalido'}
-    if not name_validator(usuario):
-        return {'error': 'Nome invalido'}
-    if not password_validator(usuario):
-        return {'error': 'Senha invalida'}
-    return {'message': 'Usuario criado com sucesso'}
+    resultado = validator_user(usuario)
+    if not resultado:
+        return {'Mensagem': 'Criado com sucesso'}
+    else:
+        return resultado
 
 
 
@@ -32,15 +30,13 @@ def email_validator(usuario: User):
         return False
     if verifica_arroba.count('.') == 0:
         return False
-    else:
-        return True
+    return True
 
 
 def name_validator(usuario: User):
     if usuario.name == '':
         return False
-    else:
-        return True
+    return True
 
 
 def password_validator(usuario: User):  
@@ -48,10 +44,38 @@ def password_validator(usuario: User):
     tamanho_senha = len(senha)
     if tamanho_senha < 6:
         return False
-    elif senha.isdigit():
+    if senha.isdigit():
         return False       
-    elif not any(char.isalpha() for char in senha):
+    if not any(char.isalpha() for char in senha):
         return False
-    else:
-        return True
-            
+    return True
+    
+    
+    
+    
+def validator_user(usuario: User):
+    erros = []
+    if not email_validator(usuario):
+        erros.append('E-mail invalido')
+    if not name_validator(usuario):
+        erros.append('Nome invalido')
+    if not password_validator(usuario):
+        erros.append('Senha invalida')
+    return erros
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
