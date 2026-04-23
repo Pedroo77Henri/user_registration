@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 
 app = FastAPI()
@@ -13,8 +13,7 @@ def create_user(usuario: User):
     resultado = validator_user(usuario)
     if not resultado:
         return {'Mensagem': 'Criado com sucesso'}
-    else:
-        return resultado
+    raise HTTPException(status_code=422, detail=resultado)
 
 
 
