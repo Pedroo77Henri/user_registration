@@ -7,3 +7,4 @@ class UserAccount(Base):
     name = Column(String)
     email = Column(String)
     password = Column(String)
+    
