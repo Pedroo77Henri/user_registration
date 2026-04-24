@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
+import re
 
 app = FastAPI()
 
@@ -17,19 +18,8 @@ def create_user(usuario: User):
 
 
 
-def email_validator(usuario: User):
-    email_usuario = usuario.email.strip()
-    if email_usuario.count('@') != 1:
-        return False
-    posicao_arroba = email_usuario.index('@')
-    if posicao_arroba == 0:
-        return False
-    verifica_arroba = email_usuario[posicao_arroba + 1:]
-    if verifica_arroba == '':
-        return False
-    if verifica_arroba.count('.') == 0:
-        return False
-    return True
+def email_validator(email):
+    return bool(re.match(r"[a-zA-Z0-9._-]+@[a-z]+([.][a-z]+)+", email))
 
 
 def name_validator(usuario: User):
@@ -54,7 +44,7 @@ def password_validator(usuario: User):
     
 def validator_user(usuario: User):
     erros = []
-    if not email_validator(usuario):
+    if not email_validator(usuario.email):
         erros.append('E-mail invalido')
     if not name_validator(usuario):
         erros.append('Nome invalido')
