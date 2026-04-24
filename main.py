@@ -1,8 +1,10 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Depends
 from pydantic import BaseModel
 import re
 from database import SessionLocal, engine, Base
 from models import UserAccount
+from sqlalchemy.orm import Session
+
 
 app = FastAPI()
 Base.metadata.create_all(bind=engine)
@@ -20,12 +22,18 @@ class User(BaseModel):
     password: str
 
 @app.post("/users")
-def create_user(usuario: User):
+def create_user(usuario: User, db: Session = Depends(get_db)):
     resultado = validator_user(usuario)
     if not resultado:
-        return {'Mensagem': 'Criado com sucesso'}
+        db_user = UserAccount(
+            name=usuario.name,
+            email=usuario.email,
+            password=usuario.password)
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+        return {'Mensagem': 'Usuario criado com sucesso'}
     raise HTTPException(status_code=422, detail=resultado)
-
 
 
 def email_validator(email):
@@ -48,9 +56,7 @@ def password_validator(usuario: User):
     if not any(char.isalpha() for char in senha):
         return False
     return True
-    
-    
-    
+       
     
 def validator_user(usuario: User):
     erros = []
@@ -61,20 +67,3 @@ def validator_user(usuario: User):
     if not password_validator(usuario):
         erros.append('Senha invalida')
     return erros
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
