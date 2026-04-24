@@ -1,8 +1,18 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import re
+from database import SessionLocal, engine, Base
+from models import UserAccount
 
 app = FastAPI()
+Base.metadata.create_all(bind=engine)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()  
 
 class User(BaseModel):
     name: str
