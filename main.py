@@ -24,20 +24,20 @@ class User(BaseModel):
 @app.post("/users")
 def create_user(usuario: User, db: Session = Depends(get_db)):
     resultado = validator_user(usuario)
-    if not resultado:
-        db_user = UserAccount(
-            name=usuario.name,
-            email=usuario.email,
-            password=usuario.password)
-        try: 
-            db.add(db_user)
-            db.commit()
-            db.refresh(db_user)
-            return {'Mensagem': 'Usuario criado com sucesso'}
-        except Exception:
-            db.rollback()
-            raise HTTPException(status_code=500, detail="Não foi possível criar usuario por dado invalido")
-    raise HTTPException(status_code=422, detail=resultado)
+    if resultado:
+        raise HTTPException(status_code=422, detail=resultado)
+    db_user = UserAccount(
+        name=usuario.name,
+        email=usuario.email,
+        password=usuario.password)
+    try: 
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
+        return {'Mensagem': 'Usuario criado com sucesso'}
+    except Exception:
+        db.rollback()
+        raise HTTPException(status_code=500, detail="Não foi possível criar usuario por dado invalido")
 
 
 def email_validator(email):
