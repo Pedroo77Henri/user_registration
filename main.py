@@ -23,9 +23,9 @@ class User(BaseModel):
 
 @app.post("/users")
 def create_user(usuario: User, db: Session = Depends(get_db)):
-    resultado = validator_user(usuario)
-    if resultado:
-        raise HTTPException(status_code=422, detail=resultado)
+    result = validator_user(usuario)
+    if result:
+        raise HTTPException(status_code=422, detail=result)
     db_user = UserAccount(
         name=usuario.name,
         email=usuario.email,
@@ -37,7 +37,35 @@ def create_user(usuario: User, db: Session = Depends(get_db)):
         return {'Mensagem': 'Usuario criado com sucesso'}
     except Exception:
         db.rollback()
-        raise HTTPException(status_code=500, detail="Não foi possível criar usuario por dado invalido")
+        raise HTTPException(status_code=500, detail="Não foi possível criar usuario")
+
+class UserUpdate(BaseModel):
+    name: str
+    email: str
+
+    @app.put("/users/{user_id}")
+    def edit_user(user_id: int, new_user: UserUpdate, db: Session = Depends (get_db)):
+            edit_id = db.query(UserAccount).filter(UserAccount.id == user_id).first()
+            if edit_id is None:
+                raise HTTPException(status_code=404, detail="Id não encontrado")
+            if not name_validator(new_user.name):
+                raise HTTPException(status_code=422, detail="Não foi possível atualizar o nome, invalido")
+            if not email_validator(new_user.email):
+                raise HTTPException(status_code=422, detail="Não foi possível atualizar o email, invalido")
+            edit_id.name = new_user.name
+            edit_id.email = new_user.email
+            try:
+                db.commit()
+                db.refresh(edit_id)
+                return{'Mensagem': 'Usuario atualizado'}
+            except Exception:
+                db.rollback()
+                raise HTTPException(status_code=500, detail="Erro na edição")
+        
+
+        
+        
+
 
 
 def email_validator(email):
